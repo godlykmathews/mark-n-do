@@ -26,7 +26,9 @@ import {
   Breadcrumbs,
   Link,
   ListItemButton,
-  Alert
+  Alert,
+  Paper,
+  InputBase
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AddIcon from '@mui/icons-material/Add';
@@ -60,6 +62,7 @@ export default function Home() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createType, setCreateType] = useState<ItemType>('folder');
   const [newItemTitle, setNewItemTitle] = useState('');
+  const [quickTaskTitle, setQuickTaskTitle] = useState('');
 
   // Collab / Folders Settings State
   const [settingsAnchorEl, setSettingsAnchorEl] = useState<null | HTMLElement>(null);
@@ -133,6 +136,32 @@ export default function Home() {
       );
       setNewItemTitle('');
       setCreateDialogOpen(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleQuickAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickTaskTitle.trim() || !user?.email) return;
+
+    let parentAllowedEmails: string[] | undefined;
+    if (currentFolderId) {
+      const parent = items.find(i => i.id === currentFolderId);
+      if (parent) {
+        parentAllowedEmails = parent.allowedEmails;
+      }
+    }
+
+    try {
+      await createItem(
+        quickTaskTitle.trim(),
+        'todo',
+        currentFolderId,
+        user.email,
+        parentAllowedEmails
+      );
+      setQuickTaskTitle('');
     } catch (err) {
       console.error(err);
     }
@@ -365,6 +394,34 @@ export default function Home() {
         >
           <AddIcon />
         </Fab>
+
+        {/* Quick Add Task Bar */}
+        <Paper
+          component="form"
+          onSubmit={handleQuickAddSubmit}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            position: 'fixed',
+            bottom: 32,
+            left: { xs: 16, sm: 'calc(50% - 280px + 16px)' },
+            width: { xs: 'calc(100% - 96px)', sm: '464px' }, // Leaves room for the FAB
+            height: 56,
+            borderRadius: 28, // Matches FAB roughly
+            px: 2,
+            boxShadow: 3
+          }}
+        >
+          <InputBase
+            sx={{ ml: 1, flex: 1 }}
+            placeholder="Quick add a task..."
+            value={quickTaskTitle}
+            onChange={(e) => setQuickTaskTitle(e.target.value)}
+          />
+          <IconButton type="submit" sx={{ p: '10px' }} aria-label="add task" color="primary">
+            <AddIcon />
+          </IconButton>
+        </Paper>
 
         <Menu
           anchorEl={anchorEl}
