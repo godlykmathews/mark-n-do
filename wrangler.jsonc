@@ -11,6 +11,14 @@
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
 	},
+	"vars": {
+		"NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyCpSm0Q00TGqfel7OwCdmtZ6rZ2qVaWdQk",
+		"NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "markndo-d63c7.firebaseapp.com",
+		"NEXT_PUBLIC_FIREBASE_PROJECT_ID": "markndo-d63c7",
+		"NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "markndo-d63c7.firebasestorage.app",
+		"NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "112726155911",
+		"NEXT_PUBLIC_FIREBASE_APP_ID": "1:112726155911:web:093a47efb4bc151c3e8e22"
+	},
 	"services": [
 		{
 			// Self-reference service binding, the service name must match the worker name
