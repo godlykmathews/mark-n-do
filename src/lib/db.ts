@@ -27,12 +27,10 @@ export interface Item {
   createdAt: any;
 }
 
-const itemsCollection = collection(db, 'items');
-
 // Subscribe to all items a user has access to
 export const subscribeToUserItems = (email: string, callback: (items: Item[]) => void) => {
   const normalizedEmail = email.toLowerCase().trim();
-  const q = query(itemsCollection, where('allowedEmails', 'array-contains', normalizedEmail));
+  const q = query(collection(db, 'items'), where('allowedEmails', 'array-contains', normalizedEmail));
   return onSnapshot(q, (snapshot) => {
     const items = snapshot.docs.map(doc => ({
       id: doc.id,
@@ -54,7 +52,7 @@ export const createItem = async (
   // If inheriting a parent, use its allowed emails, else just the owner
   const allowedEmails = parentAllowedEmails || [normalizedEmail];
   
-  await addDoc(itemsCollection, {
+  await addDoc(collection(db, 'items'), {
     title,
     type,
     parentId,
