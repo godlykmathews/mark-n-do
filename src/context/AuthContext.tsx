@@ -26,6 +26,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     // Ensure persistence is set to local (default, but good to be explicit for the requirement)
     setPersistence(auth, browserLocalPersistence)
       .then(() => {
