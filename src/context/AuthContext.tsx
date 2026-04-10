@@ -26,28 +26,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
 
   useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    
     if (typeof window === 'undefined') return;
     
     // Ensure persistence is set to local (default, but good to be explicit for the requirement)
-    setPersistence(auth, browserLocalPersistence)
-      .then(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-          setUser(user);
+    import('@/lib/firebase').then(({ auth }) => {
+      setPersistence(auth, browserLocalPersistence)
+        .then(() => {
+          unsubscribe = onAuthStateChanged(auth, (user) => {
+            setUser(user);
+            setLoading(false);
+            
+            if (user && pathname === '/login') {
+              router.push('/');
+            } else if (!user && pathname !== '/login') {
+              router.push('/login');
+            }
+          });
+        })
+        .catch((error) => {
+          console.error("Auth persistence error:", error);
           setLoading(false);
-          
-          if (user && pathname === '/login') {
-            router.push('/');
-          } else if (!user && pathname !== '/login') {
-            router.push('/login');
-          }
         });
+    });
 
-        return () => unsubscribe();
-      })
-      .catch((error) => {
-        console.error("Auth persistence error:", error);
-        setLoading(false);
-      });
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [pathname, router]);
 
   return (
