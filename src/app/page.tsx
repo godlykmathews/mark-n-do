@@ -261,7 +261,7 @@ export default function Home() {
             </Typography>
           </Box>
         ) : (
-          <List sx={{ width: '100%', bgcolor: 'background.paper', borderRadius: 2 }}>
+          <List sx={{ width: '100%' }}>
             {currentItems.map((item) => (
               <ListItem 
                 key={item.id} 
