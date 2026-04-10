@@ -17,6 +17,8 @@ import {
 import Image from 'next/image';
 import GoogleIcon from '@mui/icons-material/Google';
 
+export const dynamic = 'force-dynamic';
+
 export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);

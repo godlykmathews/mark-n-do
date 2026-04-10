@@ -48,6 +48,8 @@ import {
   deleteItem
 } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export default function Home() {
   const { user } = useAuth();
   const { currentFolderId, setCurrentFolderId } = useAppStore();
