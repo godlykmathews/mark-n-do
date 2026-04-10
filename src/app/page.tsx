@@ -45,7 +45,8 @@ import {
   toggleTodoStatus, 
   addCollaborator, 
   removeCollaborator,
-  deleteItem
+  deleteItem,
+  updateItemTitle
 } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -66,6 +67,13 @@ export default function Home() {
   const [collabDialogOpen, setCollabDialogOpen] = useState(false);
   const [collabEmail, setCollabEmail] = useState('');
   const [collabError, setCollabError] = useState('');
+
+  // Edit State
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editItemTitle, setEditItemTitle] = useState('');
+
+  // Delete State
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Live Firebase Data
   const [items, setItems] = useState<Item[]>([]);
@@ -196,12 +204,35 @@ export default function Home() {
     }
   };
 
-  const handleDeleteActiveItem = async () => {
+  const handleDeleteActiveItem = () => {
+    if (!activeItem) return;
+    setDeleteDialogOpen(true);
+    closeSettingsMenu();
+  };
+
+  const confirmDeleteActiveItem = async () => {
     if (!activeItem) return;
     try {
       const idsToDelete = [activeItem.id, ...getSubItemIds(activeItem.id)];
       await deleteItem(idsToDelete);
-      closeSettingsMenu();
+      setDeleteDialogOpen(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleEditActiveItem = () => {
+    if (!activeItem) return;
+    setEditItemTitle(activeItem.title);
+    setEditDialogOpen(true);
+    closeSettingsMenu();
+  };
+
+  const handleEditSubmit = async () => {
+    if (!activeItem || !editItemTitle.trim()) return;
+    try {
+      await updateItemTitle(activeItem.id, editItemTitle.trim());
+      setEditDialogOpen(false);
     } catch (err) {
       console.error(err);
     }
@@ -377,6 +408,9 @@ export default function Home() {
           open={Boolean(settingsAnchorEl)}
           onClose={closeSettingsMenu}
         >
+          <MenuItem onClick={handleEditActiveItem}>
+            Edit {activeItem?.type === 'folder' ? 'Folder' : 'Task'}
+          </MenuItem>
           <MenuItem 
             onClick={() => {
               setCollabDialogOpen(true);
@@ -467,6 +501,51 @@ export default function Home() {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => { setCollabDialogOpen(false); setCollabEmail(''); setCollabError(''); }}>Close</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Edit Item Dialog */}
+        <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="xs">
+          <DialogTitle>Edit {activeItem?.type === 'folder' ? 'Folder' : 'Task'}</DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="edit-title"
+              label="New Title"
+              type="text"
+              fullWidth
+              variant="outlined"
+              value={editItemTitle}
+              onChange={(e) => setEditItemTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleEditSubmit();
+                }
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleEditSubmit} variant="contained" disableElevation>Save</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} fullWidth maxWidth="xs">
+          <DialogTitle>Confirm Delete</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to delete this {activeItem?.type === 'folder' ? 'folder' : 'task'}?
+              {activeItem?.type === 'folder' && ' All items inside this folder will also be deleted.'}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button onClick={confirmDeleteActiveItem} color="error" variant="contained" disableElevation>
+              Delete
+            </Button>
           </DialogActions>
         </Dialog>
 

@@ -101,6 +101,14 @@ export const removeCollaborator = async (itemIds: string[], emailToRemove: strin
   await batch.commit();
 };
 
+// Update an item's title
+export const updateItemTitle = async (id: string, newTitle: string) => {
+  const itemRef = doc(db, 'items', id);
+  await updateDoc(itemRef, {
+    title: newTitle
+  });
+};
+
 // Utility to delete an item and all its descendants
 export const deleteItem = async (itemIds: string[]) => {
   const batch = writeBatch(db);
