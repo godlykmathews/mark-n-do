@@ -236,7 +236,7 @@ export default function Home() {
   const handleDeleteActiveItem = () => {
     if (!activeItem) return;
     setDeleteDialogOpen(true);
-    closeSettingsMenu();
+    setSettingsAnchorEl(null);
   };
 
   const confirmDeleteActiveItem = async () => {
@@ -245,6 +245,7 @@ export default function Home() {
       const idsToDelete = [activeItem.id, ...getSubItemIds(activeItem.id)];
       await deleteItem(idsToDelete);
       setDeleteDialogOpen(false);
+      setActiveItem(null);
     } catch (err) {
       console.error(err);
     }
@@ -254,7 +255,7 @@ export default function Home() {
     if (!activeItem) return;
     setEditItemTitle(activeItem.title);
     setEditDialogOpen(true);
-    closeSettingsMenu();
+    setSettingsAnchorEl(null);
   };
 
   const handleEditSubmit = async () => {
@@ -262,6 +263,7 @@ export default function Home() {
     try {
       await updateItemTitle(activeItem.id, editItemTitle.trim());
       setEditDialogOpen(false);
+      setActiveItem(null);
     } catch (err) {
       console.error(err);
     }
