@@ -32,6 +32,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     // Ensure persistence is set to local (default, but good to be explicit for the requirement)
     import('@/lib/firebase').then(({ auth }) => {
+      if (!auth || !Object.keys(auth).length) {
+        console.warn('Firebase auth is not properly initialized');
+        setLoading(false);
+        return;
+      }
+
       setPersistence(auth, browserLocalPersistence)
         .then(() => {
           unsubscribe = onAuthStateChanged(auth, (user) => {
