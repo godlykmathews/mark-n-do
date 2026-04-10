@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if the user is signed in
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper function to get the current user's email
+    function userEmail() {
+      return request.auth.token.email;
+    }
+
+    match /items/{itemId} {
+      // 1. READ: User can read the document if their email is in the allowedEmails array
+      allow read: if isSignedIn() && userEmail() in resource.data.allowedEmails;
+      
+      // 2. CREATE: User can create a document if they set themselves in the allowedEmails list
+      // and their email matches the ownerEmail
+      allow create: if isSignedIn() 
+                    && userEmail() in request.resource.data.allowedEmails
+                    && request.resource.data.ownerEmail == userEmail();
+      
+      // 3. UPDATE: User can update if their email is currently in the allowedEmails array
+      // Enforce the max 5 collaborators rule (1 owner + 4 guests) = 5 total
+      allow update: if isSignedIn() 
+                    && userEmail() in resource.data.allowedEmails
+                    && request.resource.data.allowedEmails.size() <= 5;
+      
+      // 4. DELETE: Only the owner or a collaborator can delete
+      // (You could restrict delete to ONLY owner by checking: resource.data.ownerEmail == userEmail())
+      allow delete: if isSignedIn() && userEmail() in resource.data.allowedEmails;
+    }
+  }
+}
