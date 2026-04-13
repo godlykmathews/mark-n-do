@@ -23,7 +23,6 @@ import {
   DialogActions,
   Button,
   TextField,
-  Breadcrumbs,
   Link,
   ListItemButton,
   Alert,
@@ -39,6 +38,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useAppStore } from '@/store/appStore';
+import ArrowBreadcrumbs, { BreadcrumbItem } from '@/components/Breadcrumbs';
 import { 
   Item, 
   ItemType, 
@@ -269,6 +269,21 @@ export default function Home() {
     }
   };
 
+  const getBreadcrumbsPath = (): BreadcrumbItem[] => {
+    const path: BreadcrumbItem[] = [];
+    let curr = currentFolderId;
+    while (curr) {
+      const folder = items.find(i => i.id === curr);
+      if (folder) {
+        path.unshift({ label: folder.title, path: folder.id });
+        curr = folder.parentId || null;
+      } else {
+        break;
+      }
+    }
+    return path;
+  };
+
   const currentItems = items.filter(item => item.parentId === currentFolderId);
 
   if (loading) {
@@ -300,21 +315,18 @@ export default function Home() {
       <Container maxWidth="sm" sx={{ flexGrow: 1, pt: 2, pb: 10, display: 'flex', flexDirection: 'column', position: 'relative' }}>
         
         {/* Breadcrumbs for navigation context */}
-        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-          <Link 
-            color="inherit" 
-            underline="hover" 
-            sx={{ cursor: 'pointer' }}
-            onClick={() => setCurrentFolderId(null)}
-          >
-            Home
-          </Link>
-          {currentFolderId && (
-            <Typography color="text.primary">
-              {items.find(i => i.id === currentFolderId)?.title || 'Folder'}
-            </Typography>
-          )}
-        </Breadcrumbs>
+        <Box sx={{ mb: 2, mx: -2, px: 2 }}>
+          <ArrowBreadcrumbs 
+            items={getBreadcrumbsPath()} 
+            onItemClick={(path) => {
+              if (path === '/') {
+                setCurrentFolderId(null);
+              } else {
+                setCurrentFolderId(path);
+              }
+            }} 
+          />
+        </Box>
 
         {currentItems.length === 0 ? (
           <Box sx={{ mt: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: 0.5 }}>
