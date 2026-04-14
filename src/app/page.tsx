@@ -50,6 +50,10 @@ import {
   deleteItem,
   updateItemTitle
 } from '@/lib/db';
+import { RoadmapGenerationDialog } from '@/components/RoadmapGenerationDialog';
+import { RoadmapData } from '@/lib/roadmapSchema';
+import { createRoadmapItems } from '@/lib/roadmapWriter';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 export const dynamic = 'force-dynamic';
 
@@ -77,6 +81,11 @@ export default function Home() {
 
   // Delete State
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  // Roadmap Generation State
+  const [roadmapDialogOpen, setRoadmapDialogOpen] = useState(false);
+  const [roadmapLoading, setRoadmapLoading] = useState(false);
+  const [roadmapError, setRoadmapError] = useState<string | null>(null);
 
   // Live Firebase Data
   const [items, setItems] = useState<Item[]>([]);
@@ -269,6 +278,25 @@ export default function Home() {
     }
   };
 
+  const handleRoadmapGenerated = async (roadmapData: RoadmapData) => {
+    if (!user?.email) return;
+
+    setRoadmapLoading(true);
+    setRoadmapError(null);
+
+    try {
+      await createRoadmapItems(roadmapData, {
+        userEmail: user.email,
+        parentFolderId: currentFolderId || undefined,
+      });
+    } catch (err: unknown) {
+      console.error('Failed to create roadmap items:', err);
+      setRoadmapError(err instanceof Error ? err.message : 'Failed to create roadmap.');
+    } finally {
+      setRoadmapLoading(false);
+    }
+  };
+
   const getBreadcrumbsPath = (): BreadcrumbItem[] => {
     const path: BreadcrumbItem[] = [];
     let curr = currentFolderId;
@@ -444,6 +472,15 @@ export default function Home() {
         >
           <MenuItem onClick={() => openCreateDialog('folder')}>New Folder</MenuItem>
           <MenuItem onClick={() => openCreateDialog('todo')}>New Task</MenuItem>
+          <MenuItem 
+            onClick={() => {
+              setRoadmapDialogOpen(true);
+              handleMenuClose();
+            }}
+          >
+            <AutoAwesomeIcon sx={{ mr: 1, fontSize: '1.2em' }} />
+            AI Roadmap
+          </MenuItem>
         </Menu>
 
         <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} fullWidth maxWidth="xs">
@@ -619,6 +656,18 @@ export default function Home() {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Roadmap Generation Dialog */}
+        <RoadmapGenerationDialog
+          open={roadmapDialogOpen}
+          onClose={() => {
+            setRoadmapDialogOpen(false);
+            setRoadmapError(null);
+          }}
+          onGenerated={handleRoadmapGenerated}
+          loading={roadmapLoading}
+          error={roadmapError}
+        />
 
       </Container>
     </Box>
