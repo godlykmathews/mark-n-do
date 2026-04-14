@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore';
 
 export type ItemType = 'folder' | 'todo';
+export type ItemSource = 'manual' | 'ai-generated';
 
 export interface Item {
   id: string;
@@ -25,6 +26,12 @@ export interface Item {
   ownerEmail: string;
   allowedEmails: string[]; // Includes owner + up to 4 collaborators
   createdAt: any;
+  // Roadmap metadata (optional, for AI-generated items)
+  source?: ItemSource;
+  roadmapId?: string; // Groups related generated items from same roadmap
+  weekNumber?: number; // Week index (1-based) for roadmap items
+  dayNumber?: number; // Day index (1-based) within week for roadmap items
+  order?: number; // Sort order within parent (week or day)
 }
 
 // Subscribe to all items a user has access to
